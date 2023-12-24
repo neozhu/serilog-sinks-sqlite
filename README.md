@@ -2,10 +2,10 @@
 A lightweight high performance Serilog sink that writes to SQLite database.
 
 ## Getting started
-Install [Serilog.Sinks.SQLite](https://www.nuget.org/packages/Serilog.Sinks.SQLite) from NuGet
+Install [Blazor.Serilog.Sinks.SQLite](https://www.nuget.org/packages/Serilog.Sinks.SQLite) from NuGet
 
 ```PowerShell
-Install-Package Serilog.Sinks.SQLite
+Install-Package Blazor.Serilog.Sinks.SQLite
 ```
 
 Configure logger by calling `WriteTo.SQLite()`
