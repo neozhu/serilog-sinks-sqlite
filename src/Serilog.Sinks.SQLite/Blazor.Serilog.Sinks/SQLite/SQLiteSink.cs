@@ -137,11 +137,11 @@ namespace Blazor.Serilog.Sinks.SQLite
             colDefs += "Level VARCHAR(10),";
             colDefs += "Exception TEXT,";
             colDefs += "Message TEXT,";
-            colDefs += "Properties TEXT";
-            colDefs += "MessageTemplate TEXT";
-            colDefs += "LogEvent TEXT";
-            colDefs += "UserName TEXT";
-            colDefs += "ClientIP TEXT";
+            colDefs += "Properties TEXT,";
+            colDefs += "MessageTemplate TEXT,";
+            colDefs += "LogEvent TEXT,";
+            colDefs += "UserName TEXT,";
+            colDefs += "ClientIP TEXT,";
             colDefs += "ClientAgent TEXT";
 
             var sqlCreateText = $"CREATE TABLE IF NOT EXISTS {_tableName} ({colDefs})";
