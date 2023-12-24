@@ -20,7 +20,6 @@
     <license type="expression">MIT</license>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <tags>Serilog,SQLite</tags>
-    <icon>icon.png</icon>
     <readme>README.md</readme>
   </metadata>
 </package>
