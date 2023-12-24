@@ -15,7 +15,7 @@ jobs:
           nuget-version: '6.x'
 
       - name: Create the package
-        run: nuget pack -NoDefaultExcludes
+        run: nuget pack Blazor.Serilog.Sinks.SQLite.nuspec -NoDefaultExcludes
         
       - name: Publish the package
         run: nuget push *.nupkg -Source 'https://api.nuget.org/v3/index.json' -ApiKey ${{secrets.NUGET_API_KEY}} -SkipDuplicate
