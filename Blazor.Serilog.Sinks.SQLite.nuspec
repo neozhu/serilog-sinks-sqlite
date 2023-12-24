@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Blazor.Serilog.Sinks.SQLite</id>
+    <version>1.0.0</version>
+    <title>Blazor.Serilog.Sinks.SQLite</title>
+    <authors>hl.z</authors>
+    <description>Serilog event sink that writes to SQLite database for Clean Architecture Blazor Server Application</description>
+    <summary>
+      Serilog event sink that writes to SQLite database for Clean Architecture Blazor Server Application
+    </summary>
+    <releaseNotes>
+      1.0.0 add columns (Timestamp, Level, Exception, Message, Properties,MessageTemplate,LogEvent,UserName,ClientIP,ClientAgent)
+      -  🌈 support.net 8
+     </releaseNotes>
+
+    <projectUrl>https://github.com/neozhu/serilog-sinks-sqlite</projectUrl>
+    <repository type="git" url="https://github.com/neozhu/serilog-sinks-sqlite.git" branch="dev" />
+
+    <license type="expression">MIT</license>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <tags>Serilog,SQLite</tags>
+    <icon>icon.png</icon>
+    <readme>README.md</readme>
+  </metadata>
+</package>
