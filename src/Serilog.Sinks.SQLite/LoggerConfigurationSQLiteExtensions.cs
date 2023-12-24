@@ -59,7 +59,8 @@ namespace Serilog
             LoggingLevelSwitch levelSwitch = null,
             uint batchSize = 100,
             uint maxDatabaseSize = 10,
-            bool rollOver = true)
+            bool rollOver = true,
+            bool needAutoCreateTable = false)
         {
             if (loggerConfiguration == null) {
                 SelfLog.WriteLine("Logger configuration is null");
@@ -96,7 +97,8 @@ namespace Serilog
                         retentionCheckInterval,
                         batchSize,
                         maxDatabaseSize,
-                        rollOver),
+                        rollOver,
+                        needAutoCreateTable),
                     restrictedToMinimumLevel,
                     levelSwitch);
             }

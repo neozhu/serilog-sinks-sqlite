@@ -56,7 +56,8 @@ namespace Blazor.Serilog.Sinks.SQLite
             TimeSpan? retentionCheckInterval,
             uint batchSize = 100,
             uint maxDatabaseSize = 10,
-            bool rollOver = true) : base(batchSize: (int)batchSize, maxBufferSize: 100_000)
+            bool rollOver = true,
+            bool needAutoCreateTable = false) : base(batchSize: (int)batchSize, maxBufferSize: 100_000)
         {
             _databasePath = sqlLiteDbPath;
             _tableName = tableName;
@@ -70,7 +71,10 @@ namespace Blazor.Serilog.Sinks.SQLite
                 throw new SQLiteException($"Database size greater than {MaxSupportedDatabaseSize} MB is not supported");
             }
 
-            InitializeDatabase();
+            if (needAutoCreateTable)
+            {
+                InitializeDatabase();
+            }
 
             if (retentionPeriod.HasValue)
             {
