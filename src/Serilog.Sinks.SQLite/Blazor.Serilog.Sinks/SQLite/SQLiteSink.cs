@@ -292,9 +292,9 @@ namespace Blazor.Serilog.Sinks.SQLite
                         sqlCommand.Parameters["@messageTemplate"].Value = logEvent.MessageTemplate.Text;
                         sqlCommand.Parameters["@properties"].Value = logEvent.Properties.Count > 0  ? logEvent.Properties.Json() : string.Empty;
                         sqlCommand.Parameters["@logEvent"].Value = LogEventToJson(logEvent, _formatProvider);
-                        sqlCommand.Parameters["@userName"].Value = logEvent.Properties.ContainsKey("UserName") ? logEvent.Properties["UserName"].ToString() : null;
-                        sqlCommand.Parameters["@clientIP"].Value = logEvent.Properties.ContainsKey("ClientIP") ? logEvent.Properties["ClientIP"].ToString() : null;
-                        sqlCommand.Parameters["@clientAgent"].Value = logEvent.Properties.ContainsKey("ClientAgent") ? logEvent.Properties["ClientAgent"].ToString() : null;
+                        sqlCommand.Parameters["@userName"].Value = logEvent.Properties.ContainsKey("UserName") ? logEvent.Properties["UserName"].ToString() : string.Empty;
+                        sqlCommand.Parameters["@clientIP"].Value = logEvent.Properties.ContainsKey("ClientIP") ? logEvent.Properties["ClientIP"].ToString() : string.Empty;
+                        sqlCommand.Parameters["@clientAgent"].Value = logEvent.Properties.ContainsKey("ClientAgent") ? logEvent.Properties["ClientAgent"].ToString() : string.Empty;
                         await sqlCommand.ExecuteNonQueryAsync().ConfigureAwait(false);
                     }
                     tr.Commit();
@@ -306,7 +306,7 @@ namespace Blazor.Serilog.Sinks.SQLite
             var jsonFormatter = new JsonFormatter(formatProvider: formatProvider);
 
             var sb = new StringBuilder();
-            using (var writer = new System.IO.StringWriter(sb))
+            using (var writer = new StringWriter(sb))
                 jsonFormatter.Format(logEvent, writer);
             return sb.ToString();
         }
