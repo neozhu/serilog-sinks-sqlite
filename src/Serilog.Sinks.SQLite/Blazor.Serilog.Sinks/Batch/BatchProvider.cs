@@ -21,7 +21,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Serilog.Sinks.Batch
+namespace Blazor.Serilog.Sinks.Batch
 {
     internal abstract class BatchProvider : IDisposable
     {

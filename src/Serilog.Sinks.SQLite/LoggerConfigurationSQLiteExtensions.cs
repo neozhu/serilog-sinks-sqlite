@@ -18,10 +18,10 @@ namespace Serilog
 {
     using System;
     using System.IO;
+    using Blazor.Serilog.Sinks.SQLite;
     using Serilog.Configuration;
     using Serilog.Core;
     using Serilog.Events;
-    using Serilog.Sinks.SQLite;
 
     /// <summary>
     ///     Adds the WriteTo.SQLite() extension method to <see cref="LoggerConfiguration" />.

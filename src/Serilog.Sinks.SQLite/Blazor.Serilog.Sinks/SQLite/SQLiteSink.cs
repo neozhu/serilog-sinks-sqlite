@@ -18,15 +18,17 @@ using System.Data;
 using System.Data.SQLite;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Serilog.Core;
 using Serilog.Debugging;
 using Serilog.Events;
-using Serilog.Sinks.Batch;
-using Serilog.Sinks.Extensions;
+using Serilog.Formatting.Json;
+using Blazor.Serilog.Sinks.Batch;
+using Blazor.Serilog.Sinks.Extensions;
 
-namespace Serilog.Sinks.SQLite
+namespace Blazor.Serilog.Sinks.SQLite
 {
     internal class SQLiteSink : BatchProvider, ILogEventSink
     {
@@ -130,12 +132,17 @@ namespace Serilog.Sinks.SQLite
 
         private void CreateSqlTable(SQLiteConnection sqlConnection)
         {
-            var colDefs = "id INTEGER PRIMARY KEY AUTOINCREMENT,";
-            colDefs += "Timestamp TEXT,";
+            var colDefs = "Id INTEGER PRIMARY KEY AUTOINCREMENT,";
+            colDefs += "TimeStamp TEXT,";
             colDefs += "Level VARCHAR(10),";
             colDefs += "Exception TEXT,";
-            colDefs += "RenderedMessage TEXT,";
+            colDefs += "Message TEXT,";
             colDefs += "Properties TEXT";
+            colDefs += "MessageTemplate TEXT";
+            colDefs += "LogEvent TEXT";
+            colDefs += "UserName TEXT";
+            colDefs += "ClientIP TEXT";
+            colDefs += "ClientAgent TEXT";
 
             var sqlCreateText = $"CREATE TABLE IF NOT EXISTS {_tableName} ({colDefs})";
 
@@ -145,8 +152,8 @@ namespace Serilog.Sinks.SQLite
 
         private SQLiteCommand CreateSqlInsertCommand(SQLiteConnection connection)
         {
-            var sqlInsertText = "INSERT INTO {0} (Timestamp, Level, Exception, RenderedMessage, Properties)";
-            sqlInsertText += " VALUES (@timeStamp, @level, @exception, @renderedMessage, @properties)";
+            var sqlInsertText = "INSERT INTO {0} (Timestamp, Level, Exception, Message, Properties,MessageTemplate,LogEvent,UserName,ClientIP,ClientAgent)";
+            sqlInsertText += " VALUES (@timeStamp, @level, @exception, @message, @properties,@messageTemplate,@logEvent,@userName,@clientIP,@clientAgent)";
             sqlInsertText = string.Format(sqlInsertText, _tableName);
 
             var sqlCommand = connection.CreateCommand();
@@ -156,8 +163,13 @@ namespace Serilog.Sinks.SQLite
             sqlCommand.Parameters.Add(new SQLiteParameter("@timeStamp", DbType.DateTime2));
             sqlCommand.Parameters.Add(new SQLiteParameter("@level", DbType.String));
             sqlCommand.Parameters.Add(new SQLiteParameter("@exception", DbType.String));
-            sqlCommand.Parameters.Add(new SQLiteParameter("@renderedMessage", DbType.String));
+            sqlCommand.Parameters.Add(new SQLiteParameter("@message", DbType.String));
             sqlCommand.Parameters.Add(new SQLiteParameter("@properties", DbType.String));
+            sqlCommand.Parameters.Add(new SQLiteParameter("@messageTemplate", DbType.String));
+            sqlCommand.Parameters.Add(new SQLiteParameter("@logEvent", DbType.String));
+            sqlCommand.Parameters.Add(new SQLiteParameter("@userName", DbType.String));
+            sqlCommand.Parameters.Add(new SQLiteParameter("@clientIP", DbType.String));
+            sqlCommand.Parameters.Add(new SQLiteParameter("@clientAgent", DbType.String));
 
             return sqlCommand;
         }
@@ -276,17 +288,27 @@ namespace Serilog.Sinks.SQLite
                         sqlCommand.Parameters["@level"].Value = logEvent.Level.ToString();
                         sqlCommand.Parameters["@exception"].Value =
                             logEvent.Exception?.ToString() ?? string.Empty;
-                        sqlCommand.Parameters["@renderedMessage"].Value = logEvent.MessageTemplate.Render(logEvent.Properties, _formatProvider);
-
-                        sqlCommand.Parameters["@properties"].Value = logEvent.Properties.Count > 0
-                            ? logEvent.Properties.Json()
-                            : string.Empty;
-
+                        sqlCommand.Parameters["@message"].Value = logEvent.MessageTemplate.Render(logEvent.Properties, _formatProvider);
+                        sqlCommand.Parameters["@messageTemplate"].Value = logEvent.MessageTemplate.Text;
+                        sqlCommand.Parameters["@properties"].Value = logEvent.Properties.Count > 0  ? logEvent.Properties.Json() : string.Empty;
+                        sqlCommand.Parameters["@logEvent"].Value = LogEventToJson(logEvent, _formatProvider);
+                        sqlCommand.Parameters["@userName"].Value = logEvent.Properties.ContainsKey("UserName") ? logEvent.Properties["UserName"].ToString() : null;
+                        sqlCommand.Parameters["@clientIP"].Value = logEvent.Properties.ContainsKey("ClientIP") ? logEvent.Properties["ClientIP"].ToString() : null;
+                        sqlCommand.Parameters["@clientAgent"].Value = logEvent.Properties.ContainsKey("ClientAgent") ? logEvent.Properties["ClientAgent"].ToString() : null;
                         await sqlCommand.ExecuteNonQueryAsync().ConfigureAwait(false);
                     }
                     tr.Commit();
                 }
             }
+        }
+        private object LogEventToJson(LogEvent logEvent, IFormatProvider formatProvider)
+        {
+            var jsonFormatter = new JsonFormatter(formatProvider: formatProvider);
+
+            var sb = new StringBuilder();
+            using (var writer = new System.IO.StringWriter(sb))
+                jsonFormatter.Format(logEvent, writer);
+            return sb.ToString();
         }
     }
 }
