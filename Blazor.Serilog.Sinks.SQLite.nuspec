@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
     <id>Blazor.Serilog.Sinks.SQLite</id>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <title>Blazor.Serilog.Sinks.SQLite</title>
     <authors>hl.z</authors>
     <description>Serilog event sink that writes to SQLite database for Clean Architecture Blazor Server Application</description>
