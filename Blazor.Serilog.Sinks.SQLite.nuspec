@@ -11,7 +11,7 @@
     </summary>
     <releaseNotes>
       1.0.0 add columns (Timestamp, Level, Exception, Message, Properties,MessageTemplate,LogEvent,UserName,ClientIP,ClientAgent)
-      -  🌈 support.net 8
+      -  🌈 support.net 8 blazor
      </releaseNotes>
 
     <projectUrl>https://github.com/neozhu/serilog-sinks-sqlite</projectUrl>
