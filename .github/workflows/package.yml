@@ -3,21 +3,27 @@ on:
   push:
     branches:
       - dev
-    paths:
-      - 'Blazor.Serilog.Sinks.SQLite.nuspec'
 jobs:
   publish:
     name: Publish to NuGet.org
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-
-      - uses: nuget/setup-nuget@v1
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
         with:
-          nuget-version: '6.x'
+          dotnet-version: '8.0.x'
 
-      - name: Create the package
-        run: nuget pack Blazor.Serilog.Sinks.SQLite.nuspec -NoDefaultExcludes
-        
-      - name: Publish the package
-        run: nuget push **/*.nupkg -Source 'https://api.nuget.org/v3/index.json' -ApiKey ${{secrets.NUGET_API_KEY}} -SkipDuplicate
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore
+
+
+      - name: Pack
+        run: dotnet pack Blazor.Serilog.Sinks.SQLite.sln --no-build -c Release -o out
+
+      - name: Publish to NuGet
+        run: dotnet nuget push "out/*.nupkg" --source https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }}
+    
