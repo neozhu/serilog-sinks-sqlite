@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - dev
+    paths:
+      - 'src/Serilog.Sinks.SQLite/Blazor.Serilog.Sinks.SQLite.csproj'
 jobs:
   publish:
     name: Publish to NuGet.org

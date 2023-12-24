@@ -1,5 +1,8 @@
-# Serilog.Sinks.SQLite
-A lightweight high performance Serilog sink that writes to SQLite database.
+# Blazor.Serilog.Sinks.SQLite
+[![.NET](https://github.com/neozhu/serilog-sinks-sqlite/actions/workflows/dotnet.yml/badge.svg)](https://github.com/neozhu/serilog-sinks-sqlite/actions/workflows/dotnet.yml)
+[![Package](https://github.com/neozhu/serilog-sinks-sqlite/actions/workflows/package.yml/badge.svg)](https://github.com/neozhu/serilog-sinks-sqlite/actions/workflows/package.yml)
+
+A lightweight high performance Serilog sink that writes to SQLite database for Clean Architecture Blazor Server Application 
 
 ## Getting started
 Install [Blazor.Serilog.Sinks.SQLite](https://www.nuget.org/packages/Serilog.Sinks.SQLite) from NuGet
@@ -11,9 +14,17 @@ Install-Package Blazor.Serilog.Sinks.SQLite
 Configure logger by calling `WriteTo.SQLite()`
 
 ```C#
-var logger = new LoggerConfiguration()
-    .WriteTo.SQLite(@"Logs\log.db")
-    .CreateLogger();
+private static void WriteToSqLite(LoggerConfiguration serilogConfig, string? connectionString)
+{
+    if (string.IsNullOrEmpty(connectionString)) return;
+    var sqlPath = Environment.CurrentDirectory + @"/app.db";
+    const string tableName = "Loggers";
+    serilogConfig.WriteTo.Async(wt => wt.SQLite(
+        sqlPath,
+        tableName,
+        LogEventLevel.Information
+    ).CreateLogger());
+}
     
 logger.Information("This informational message will be written to SQLite database");
 ```
@@ -22,26 +33,14 @@ logger.Information("This informational message will be written to SQLite databas
 
 To use the SQLite sink with the [Serilog.Settings.AppSettings](https://www.nuget.org/packages/Serilog.Settings.AppSettings) package, first install that package if you haven't already done so:
 
-```PowerShell
-Install-Package Serilog.Settings.AppSettings
-```
-In your code, call `ReadFrom.AppSettings()`
+
 
 ```C#
 var logger = new LoggerConfiguration()
     .ReadFrom.AppSettings()
     .CreateLogger();
 ```
-In your application's App.config or Web.config file, specify the SQLite sink assembly and required **sqliteDbPath** under the `<appSettings>` node:
 
-```XML
-<appSettings>
-    <add key="serilog:using:SQLite" value="Serilog.Sinks.SQLite"/>
-    <add key="serilog:write-to:SQLite.sqliteDbPath" value="Logs\log.db"/>
-    <add key="serilog:write-to:SQLite.tableName" value="Logs"/>
-    <add key="serilog:write-to:SQLite.storeTimestampInUtc" value="true"/>
-</appSettings>    
-```
 
 ## Performance
 SQLite sink automatically buffers log internally and flush to SQLite database in batches on dedicated thread.
