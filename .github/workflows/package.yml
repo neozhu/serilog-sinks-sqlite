@@ -12,10 +12,10 @@ jobs:
 
       - uses: nuget/setup-nuget@v1
         with:
+          nuget-api-key: ${{ secrets.NUGET_API_KEY }}
           nuget-version: '6.x'
 
       - name: Create the package
-        run: nuget pack Blazor.Serilog.Sinks.SQLite.nuspec -NoDefaultExcludes
+        run: nuget restore Blazor.Serilog.Sinks.SQLite.sln
         
-      - name: Publish the package
-        run: nuget push *.nupkg -Source 'https://api.nuget.org/v3/index.json' -ApiKey ${{secrets.NUGET_API_KEY}} -SkipDuplicate
+     
