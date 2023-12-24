@@ -12,7 +12,7 @@ jobs:
 
       - uses: nuget/setup-nuget@v1
         with:
-          nuget-version: '1.x'
+          nuget-version: '6.x'
 
       - name: Create the package
         run: nuget pack  --configuration Release
