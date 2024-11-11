@@ -15,7 +15,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SQLite;
+using Microsoft.Data.Sqlite;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -46,7 +46,7 @@ namespace Blazor.Serilog.Sinks.SQLite
         private const long MaxSupportedPageSize = 4096;
         private const long MaxSupportedDatabaseSize = unchecked(MaxSupportedPageSize * MaxSupportedPages) / 1048576;
         private static SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1, 1);
-        
+
         public SQLiteSink(
             string sqlLiteDbPath,
             string tableName,
@@ -68,7 +68,7 @@ namespace Blazor.Serilog.Sinks.SQLite
 
             if (maxDatabaseSize > MaxSupportedDatabaseSize)
             {
-                throw new SQLiteException($"Database size greater than {MaxSupportedDatabaseSize} MB is not supported");
+                throw new Exception($"Database size greater than {MaxSupportedDatabaseSize} MB is not supported");
             }
 
             if (needAutoCreateTable)
@@ -116,25 +116,22 @@ namespace Blazor.Serilog.Sinks.SQLite
             }
         }
 
-        private SQLiteConnection GetSqLiteConnection()
+        private SqliteConnection GetSqLiteConnection()
         {
-            var sqlConString = new SQLiteConnectionStringBuilder
+            var sqlConString = new SqliteConnectionStringBuilder
             {
                 DataSource = _databasePath,
-                JournalMode = SQLiteJournalModeEnum.Memory,
-                SyncMode = SynchronizationModes.Normal,
-                CacheSize = 500,
-                PageSize = (int)MaxSupportedPageSize,
-                MaxPageCount = (int)(_maxDatabaseSize * BytesPerMb / MaxSupportedPageSize)
-            }.ConnectionString;
+                Cache = SqliteCacheMode.Shared,
+                Mode = SqliteOpenMode.ReadWriteCreate
+            }.ToString();
 
-            var sqLiteConnection = new SQLiteConnection(sqlConString);
+            var sqLiteConnection = new SqliteConnection(sqlConString);
             sqLiteConnection.Open();
 
             return sqLiteConnection;
         }
 
-        private void CreateSqlTable(SQLiteConnection sqlConnection)
+        private void CreateSqlTable(SqliteConnection sqlConnection)
         {
             var colDefs = "Id INTEGER PRIMARY KEY AUTOINCREMENT,";
             colDefs += "TimeStamp TEXT,";
@@ -150,11 +147,11 @@ namespace Blazor.Serilog.Sinks.SQLite
 
             var sqlCreateText = $"CREATE TABLE IF NOT EXISTS {_tableName} ({colDefs})";
 
-            var sqlCommand = new SQLiteCommand(sqlCreateText, sqlConnection);
+            var sqlCommand = new SqliteCommand(sqlCreateText, sqlConnection);
             sqlCommand.ExecuteNonQuery();
         }
 
-        private SQLiteCommand CreateSqlInsertCommand(SQLiteConnection connection)
+        private SqliteCommand CreateSqlInsertCommand(SqliteConnection connection)
         {
             var sqlInsertText = "INSERT INTO {0} (Timestamp, Level, Exception, Message, Properties,MessageTemplate,LogEvent,UserName,ClientIP,ClientAgent)";
             sqlInsertText += " VALUES (@timeStamp, @level, @exception, @message, @properties,@messageTemplate,@logEvent,@userName,@clientIP,@clientAgent)";
@@ -164,16 +161,16 @@ namespace Blazor.Serilog.Sinks.SQLite
             sqlCommand.CommandText = sqlInsertText;
             sqlCommand.CommandType = CommandType.Text;
 
-            sqlCommand.Parameters.Add(new SQLiteParameter("@timeStamp", DbType.DateTime2));
-            sqlCommand.Parameters.Add(new SQLiteParameter("@level", DbType.String));
-            sqlCommand.Parameters.Add(new SQLiteParameter("@exception", DbType.String));
-            sqlCommand.Parameters.Add(new SQLiteParameter("@message", DbType.String));
-            sqlCommand.Parameters.Add(new SQLiteParameter("@properties", DbType.String));
-            sqlCommand.Parameters.Add(new SQLiteParameter("@messageTemplate", DbType.String));
-            sqlCommand.Parameters.Add(new SQLiteParameter("@logEvent", DbType.String));
-            sqlCommand.Parameters.Add(new SQLiteParameter("@userName", DbType.String));
-            sqlCommand.Parameters.Add(new SQLiteParameter("@clientIP", DbType.String));
-            sqlCommand.Parameters.Add(new SQLiteParameter("@clientAgent", DbType.String));
+            sqlCommand.Parameters.Add(new SqliteParameter("@timeStamp", DbType.String));
+            sqlCommand.Parameters.Add(new SqliteParameter("@level", DbType.String));
+            sqlCommand.Parameters.Add(new SqliteParameter("@exception", DbType.String));
+            sqlCommand.Parameters.Add(new SqliteParameter("@message", DbType.String));
+            sqlCommand.Parameters.Add(new SqliteParameter("@properties", DbType.String));
+            sqlCommand.Parameters.Add(new SqliteParameter("@messageTemplate", DbType.String));
+            sqlCommand.Parameters.Add(new SqliteParameter("@logEvent", DbType.String));
+            sqlCommand.Parameters.Add(new SqliteParameter("@userName", DbType.String));
+            sqlCommand.Parameters.Add(new SqliteParameter("@clientIP", DbType.String));
+            sqlCommand.Parameters.Add(new SqliteParameter("@clientAgent", DbType.String));
 
             return sqlCommand;
         }
@@ -192,7 +189,7 @@ namespace Blazor.Serilog.Sinks.SQLite
             }
         }
 
-        private void TruncateLog(SQLiteConnection sqlConnection)
+        private void TruncateLog(SqliteConnection sqlConnection)
         {
             var cmd = sqlConnection.CreateCommand();
             cmd.CommandText = $"DELETE FROM {_tableName}";
@@ -201,19 +198,19 @@ namespace Blazor.Serilog.Sinks.SQLite
             VacuumDatabase(sqlConnection);
         }
 
-        private void VacuumDatabase(SQLiteConnection sqlConnection)
+        private void VacuumDatabase(SqliteConnection sqlConnection)
         {
             var cmd = sqlConnection.CreateCommand();
-            cmd.CommandText = $"vacuum";
+            cmd.CommandText = "vacuum";
             cmd.ExecuteNonQuery();
         }
 
-        private SQLiteCommand CreateSqlDeleteCommand(SQLiteConnection sqlConnection, DateTimeOffset epoch)
+        private SqliteCommand CreateSqlDeleteCommand(SqliteConnection sqlConnection, DateTimeOffset epoch)
         {
             var cmd = sqlConnection.CreateCommand();
             cmd.CommandText = $"DELETE FROM {_tableName} WHERE Timestamp < @epoch";
             cmd.Parameters.Add(
-                new SQLiteParameter("@epoch", DbType.DateTime2)
+                new SqliteParameter("@epoch", DbType.String)
                 {
                     Value = (_storeTimestampInUtc ? epoch.ToUniversalTime() : epoch).ToString(
                         TimestampFormat)
@@ -236,17 +233,16 @@ namespace Blazor.Serilog.Sinks.SQLite
                         await WriteToDatabaseAsync(logEventsBatch, sqlConnection).ConfigureAwait(false);
                         return true;
                     }
-                    catch (SQLiteException e)
+                    catch (SqliteException e)
                     {
                         SelfLog.WriteLine(e.Message);
 
-                        if (e.ResultCode != SQLiteErrorCode.Full)
+                        if (e.SqliteErrorCode != SQLitePCL.raw.SQLITE_FULL)
                             return false;
 
                         if (_rollOver == false)
                         {
                             SelfLog.WriteLine("Discarding log excessive of max database");
-
                             return true;
                         }
 
@@ -254,7 +250,7 @@ namespace Blazor.Serilog.Sinks.SQLite
 
                         var newFilePath = Path.Combine(Path.GetDirectoryName(_databasePath) ?? "Logs",
                             $"{Path.GetFileNameWithoutExtension(_databasePath)}-{DateTime.Now:yyyyMMdd_HHmmss.ff}{dbExtension}");
-                         
+
                         File.Copy(_databasePath, newFilePath, true);
 
                         TruncateLog(sqlConnection);
@@ -276,7 +272,7 @@ namespace Blazor.Serilog.Sinks.SQLite
             }
         }
 
-        private async Task WriteToDatabaseAsync(ICollection<LogEvent> logEventsBatch, SQLiteConnection sqlConnection)
+        private async Task WriteToDatabaseAsync(ICollection<LogEvent> logEventsBatch, SqliteConnection sqlConnection)
         {
             using (var tr = sqlConnection.BeginTransaction())
             {
@@ -294,7 +290,7 @@ namespace Blazor.Serilog.Sinks.SQLite
                             logEvent.Exception?.ToString() ?? string.Empty;
                         sqlCommand.Parameters["@message"].Value = logEvent.MessageTemplate.Render(logEvent.Properties, _formatProvider);
                         sqlCommand.Parameters["@messageTemplate"].Value = logEvent.MessageTemplate.Text;
-                        sqlCommand.Parameters["@properties"].Value = logEvent.Properties.Count > 0  ? logEvent.Properties.Json() : string.Empty;
+                        sqlCommand.Parameters["@properties"].Value = logEvent.Properties.Count > 0 ? logEvent.Properties.Json() : string.Empty;
                         sqlCommand.Parameters["@logEvent"].Value = LogEventToJson(logEvent, _formatProvider);
                         sqlCommand.Parameters["@userName"].Value = logEvent.Properties.ContainsKey("UserName") ? logEvent.Properties["UserName"].ToString() : string.Empty;
                         sqlCommand.Parameters["@clientIP"].Value = logEvent.Properties.ContainsKey("ClientIP") ? logEvent.Properties["ClientIP"].ToString() : string.Empty;

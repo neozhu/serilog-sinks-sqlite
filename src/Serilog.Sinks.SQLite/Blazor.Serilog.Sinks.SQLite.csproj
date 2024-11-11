@@ -34,20 +34,11 @@
         <Version>$(Version)-$(VersionSuffix)</Version>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-        <PackageReference Include="Serilog" Version="3.1.1" />
-        <PackageReference Include="SQLite" Version="3.13.0" />
-        <PackageReference Include="System.Data.SQLite" Version="1.0.118" />
+        <PackageReference Include="Microsoft.CSharp" Version="*" />
+        <PackageReference Include="Serilog"  Version="*"  />
+        <PackageReference Include="SQLite"  Version="*"  />
+        <PackageReference Include="System.Text.Json"  Version="*"  />
+		<PackageReference Include="Microsoft.Data.Sqlite.Core"  Version="*"  />
     </ItemGroup>
-    <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-      <PackageReference Include="Microsoft.Data.Sqlite.Core">
-        <Version>8.0.0</Version>
-      </PackageReference>
-    </ItemGroup>
-    <ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">
-      <PackageReference Include="Microsoft.Data.Sqlite.Core">
-        <Version>7.0.5</Version>
-      </PackageReference>
-    </ItemGroup>
+    
 </Project>
