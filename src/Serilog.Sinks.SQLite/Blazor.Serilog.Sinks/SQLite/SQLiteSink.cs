@@ -112,6 +112,11 @@ namespace Blazor.Serilog.Sinks.SQLite
         {
             using (var conn = GetSqLiteConnection())
             {
+                using (var command = conn.CreateCommand())
+                {
+                    command.CommandText = "PRAGMA journal_mode=WAL;";
+                    command.ExecuteNonQuery();
+                }
                 CreateSqlTable(conn);
             }
         }
