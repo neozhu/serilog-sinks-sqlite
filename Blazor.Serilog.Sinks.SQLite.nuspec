@@ -10,8 +10,8 @@
       Serilog event sink that writes to SQLite database for Clean Architecture Blazor Server Application
     </summary>
     <releaseNotes>
-      1.0.0 add columns (Timestamp, Level, Exception, Message, Properties,MessageTemplate,LogEvent,UserName,ClientIP,ClientAgent)
-      -  🌈 support.net 8 blazor
+      1.0.9
+      -  🌈 support.net 10 blazor
      </releaseNotes>
 
     <projectUrl>https://github.com/neozhu/serilog-sinks-sqlite</projectUrl>
