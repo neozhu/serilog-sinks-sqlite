@@ -3,7 +3,7 @@
         <AssemblyTitle>Serilog.Sinks.SQLite</AssemblyTitle>
         <Authors>neozhu</Authors>
         <AssemblyName>Blazor.Serilog.Sinks.SQLite</AssemblyName>
-        <Description>Serilog event sink that writes to SQLite database for Clean Architecture Blazor Server Application</Description>
+        <Description>Serilog event sink that writes to SQLite database for Clean Architecture Blazor Server Application template</Description>
         <PackageId>Blazor.Serilog.Sinks.SQLite</PackageId>
         <PackageTags>serilog;logging;SQLite</PackageTags>
         <PackageIconUrl>http://serilog.net/images/serilog-sink-nuget.png</PackageIconUrl>
